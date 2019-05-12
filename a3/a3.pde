@@ -163,6 +163,7 @@ void moveShip() {
         window.
 ***************************************************************/
 PVector keepOnScreen(PVector coord){
+
   if (coord.y > height) {
     coord.y = 0;
   }
@@ -240,8 +241,11 @@ void keyPressed() {
   }
   if (key == ' ') {  //fire a shot
     
-    PVector newShot = new PVector(cos(shipHeading), sin(shipHeading));  // determines shot direction
-    newShot.setMag(shotSpeed); // sets the speed of the shot
+    // initial shot direction is based on ship's heading
+    PVector newShot = new PVector(cos(shipHeading), sin(shipHeading));
+
+    // set the speed of the shot
+    newShot.setMag(shotSpeed);
     
     // add the new shot to the PVector ArrayLists
     shotLocations.add(new PVector(shipLocation.x, shipLocation.y));
