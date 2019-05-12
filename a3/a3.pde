@@ -9,7 +9,6 @@
 * Notes: If any third party items are use they need to be credited (don't use anything with copyright - unless you have permission)
 * ...
 **************************************************************/
-// comment
 
 // ship related variables
 PShape ship;
@@ -23,12 +22,14 @@ float shipHeading = radians(270); // ship starts facing up
 
 // asteroid related variables
 int numAsteroids = 10;
+int numSides = 12;
 PVector[] asteroidLocation = new PVector[numAsteroids];
 PVector[] asteroidDirection = new PVector[numAsteroids];
 PShape[] asteroidShape = new PShape[numAsteroids];
 
 // shot related variables
-// ArrayLists are used to make it easy to add and remove shots without recreating an array each time
+// ArrayLists are used to make it easy to add and remove shots without 
+// recreating the array each time
 ArrayList<PVector> shotLocations = new ArrayList<PVector>();
 ArrayList<PVector> shotVelocitys = new ArrayList<PVector>();
 float shotSpeed = 4;
@@ -39,7 +40,7 @@ int score = 0;
 boolean alive = true;
 
 
-void setup(){
+void setup() {
   size(800,800);
   
   // initialise pvectors 
@@ -47,7 +48,7 @@ void setup(){
   shipVelocity = new PVector(0, 0);   // ship starts stationary
   shipAcceleration = new PVector(0,0); // and with no acceleration
   
-  createAsteriods(numAsteroids);
+  createAsteriods(numAsteroids, "large");
   ship = createShip();
   
 }
@@ -55,7 +56,7 @@ void setup(){
 void draw(){
   background(255);
   
-  // TODO
+  // TODO:
   // checking to see if you are still alive
   // report if game over or won
   // draw score
@@ -83,11 +84,25 @@ PShape createShip(){
   return ship;
 }
 
-void createAsteriods(int numAsteroids) {
+void createAsteriods(int numAsteroids, String asteroidSize) {
+  int size = 0;
+
+  switch (asteroidSize) {
+    case "large": 
+      size = 30;
+      break;
+    case "medium":
+      size = 20;
+      break;
+    case "small":
+      size = 10;
+      break;
+  }
+
   for (int i = 0; i < numAsteroids; i++) {
     asteroidLocation[i] = new PVector(random(width), random(height));
     asteroidDirection[i] = PVector.random2D();
-    asteroidShape[i] = generateRandomAsteroid(30, 12);
+    asteroidShape[i] = generateRandomAsteroid(size, numSides);
   }
 }
 
