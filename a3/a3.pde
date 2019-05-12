@@ -9,6 +9,7 @@
 * Notes: If any third party items are use they need to be credited (don't use anything with copyright - unless you have permission)
 * ...
 **************************************************************/
+// comment
 
 // ship related variables
 PShape ship;
