@@ -26,6 +26,7 @@ int numSides = 12;
 PVector[] asteroidLocation = new PVector[numAsteroids];
 PVector[] asteroidDirection = new PVector[numAsteroids];
 PShape[] asteroidShape = new PShape[numAsteroids];
+int[] asteroidSize = new int[numAsteroids];
 
 // shot related variables
 // ArrayLists are used to make it easy to add and remove shots without 
@@ -48,7 +49,10 @@ void setup() {
   shipVelocity = new PVector(0, 0);   // ship starts stationary
   shipAcceleration = new PVector(0,0); // and with no acceleration
   
-  createAsteriods(numAsteroids, "large");
+  for (int i=0; i<numAsteroids; i++) {
+    createAsteroid("large", i);
+  }
+  
   ship = createShip();
   
 }
@@ -71,23 +75,31 @@ void draw(){
 }
 
 PShape createShip(){
-  ship = createShape();
+  PShape newShip;
+
+  newShip = createShape();
   noFill();
   
-  ship.beginShape();
-  ship.vertex(10,0);
-  ship.vertex(-10,-7);
-  ship.vertex(-5,0);
-  ship.vertex(-10,7);
-  ship.endShape(CLOSE);
+  newShip.beginShape();
+  newShip.vertex(10,0);
+  newShip.vertex(-10,-7);
+  newShip.vertex(-5,0);
+  newShip.vertex(-10,7);
+  newShip.endShape(CLOSE);
   
-  return ship;
+  return newShip;
 }
 
-void createAsteriods(int numAsteroids, String asteroidSize) {
+void createAsteroid(String smallMediumOrLarge, int i){
+  // when starting position is not specified, run the function with a
+  // random starting position
+  createAsteroid(smallMediumOrLarge, i, random(width), random(height));
+}
+
+void createAsteroid(String smallMediumOrLarge, int i, float x, float y) {
   int size = 0;
 
-  switch (asteroidSize) {
+  switch (smallMediumOrLarge) {
     case "large": 
       size = 30;
       break;
@@ -99,14 +111,13 @@ void createAsteriods(int numAsteroids, String asteroidSize) {
       break;
   }
 
-  for (int i = 0; i < numAsteroids; i++) {
-    asteroidLocation[i] = new PVector(random(width), random(height));
-    asteroidDirection[i] = PVector.random2D();
-    asteroidShape[i] = generateRandomAsteroid(size, numSides);
-  }
+  asteroidLocation[i] = new PVector(x, y);
+  asteroidDirection[i] = PVector.random2D();
+  asteroidShape[i] = generateAsteroidShape(size, numSides);
+  asteroidSize[i] = size;
 }
 
-PShape generateRandomAsteroid(float radius, int numPoints) {
+PShape generateAsteroidShape(float radius, int numPoints) {
   float angle = TWO_PI / numPoints;
   PShape asteroid = createShape();
   noFill();
@@ -119,6 +130,67 @@ PShape generateRandomAsteroid(float radius, int numPoints) {
   }
   asteroid.endShape(CLOSE);
   return asteroid;
+}
+
+void testAsteroidBreak(int beenHit){
+
+  if (beenHit == 0 && asteroidLocation.length == 1) { // hit the last asteroid
+    // Reset asteroids
+    // Increase Asteroid Speed
+    // Increase Score
+    return;
+  }
+
+  float newX = asteroidLocation[beenHit].x;
+  float newY = asteroidLocation[beenHit].y;
+  
+  int newNumAsteroids = numAsteroids;
+  if (asteroidSize[beenHit] == 30 || asteroidSize[beenHit] == 20) {
+    newNumAsteroids += 1;
+  } else {
+    newNumAsteroids -= 1;
+  }
+  
+  PVector[] tempLocation = new PVector[newNumAsteroids];
+  PVector[] tempDirection = new PVector[newNumAsteroids];
+  PShape[] tempShape = new PShape[newNumAsteroids];
+  int[] tempSize = new int[newNumAsteroids];
+  
+  int ii = 0;
+  if (asteroidSize[beenHit] == 30 || asteroidSize[beenHit] == 20) { // the ones that split
+    for (int i=0; i<numAsteroids; i++) {
+      if (i == beenHit) {i++;}
+      tempLocation[ii] = asteroidLocation[i];
+      tempDirection[ii] = asteroidDirection[i];
+      tempShape[ii] = asteroidShape[i];
+      tempSize[ii] = asteroidSize[i];
+      ii++;
+    }
+    asteroidLocation = tempLocation;
+    asteroidDirection = tempDirection;
+    asteroidShape = tempShape;
+    asteroidSize = tempSize;
+  
+    createAsteroid("small", ii, newX, newY);
+    ii++;
+    createAsteroid("small", ii, newX, newY); 
+  } else {  // is a small asteroid - remove it from the arrays
+    for (int i=0; i<=newNumAsteroids; i++) {
+      if (i == beenHit) {i++;}
+      tempLocation[ii] = asteroidLocation[i];
+      tempDirection[ii] = asteroidDirection[i];
+      tempShape[ii] = asteroidShape[i];
+      tempSize[ii] = asteroidSize[i];
+      ii++;
+    }
+    asteroidLocation = tempLocation;
+    asteroidDirection = tempDirection;
+    asteroidShape = tempShape;
+    asteroidSize = tempSize;
+  }
+
+  numAsteroids = asteroidLocation.length;
+  
 }
 
 void moveShip() {
@@ -143,13 +215,12 @@ void moveShip() {
   }
   
   shipLocation.add(shipVelocity);
-  
-  // Keep ship on the screen
-  // I put this into a function because the code can be reused with the asteroids
+
+  // TODO: write keepOnScreen as an extension to the PVector class if possible
   shipLocation = keepOnScreen(shipLocation);
 }
 
-
+PVector keepOnScreen(PVector coord){
 /**************************************************************
 * Function: keepOnScreen()
 
@@ -162,7 +233,6 @@ void moveShip() {
         and if they have, changes the coordinates to be on the other side of the 
         window.
 ***************************************************************/
-PVector keepOnScreen(PVector coord){
 
   if (coord.y > height) {
     coord.y = 0;
@@ -231,6 +301,7 @@ void keyPressed() {
     }
     if (keyCode == DOWN) {
       sDOWN=true;
+      testAsteroidBreak(0);
     } 
     if (keyCode == RIGHT) {
       sRIGHT=true;
