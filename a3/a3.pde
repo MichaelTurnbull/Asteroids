@@ -70,9 +70,8 @@ void draw(){
   collisionDetection();
   drawShots();
   drawAsteroids();
-  
-
 }
+
 
 PShape createShip(){
   PShape newShip;
@@ -90,13 +89,13 @@ PShape createShip(){
   return newShip;
 }
 
-void createAsteroid(String smallMediumOrLarge, int i){
+void createAsteroid(String smallMediumOrLarge, int index){
   // when starting position is not specified, run the function with a
   // random starting position
-  createAsteroid(smallMediumOrLarge, i, random(width), random(height));
+  createAsteroid(smallMediumOrLarge, index, random(width), random(height));
 }
 
-void createAsteroid(String smallMediumOrLarge, int i, float x, float y) {
+void createAsteroid(String smallMediumOrLarge, int index, float x, float y) {
   int size = 0;
 
   switch (smallMediumOrLarge) {
@@ -111,10 +110,10 @@ void createAsteroid(String smallMediumOrLarge, int i, float x, float y) {
       break;
   }
 
-  asteroidLocation[i] = new PVector(x, y);
-  asteroidDirection[i] = PVector.random2D();
-  asteroidShape[i] = generateAsteroidShape(size, numSides);
-  asteroidSize[i] = size;
+  asteroidLocation[index] = new PVector(x, y);
+  asteroidDirection[index] = PVector.random2D();
+  asteroidShape[index] = generateAsteroidShape(size, numSides);
+  asteroidSize[index] = size;
 }
 
 PShape generateAsteroidShape(float radius, int numPoints) {
@@ -132,65 +131,95 @@ PShape generateAsteroidShape(float radius, int numPoints) {
   return asteroid;
 }
 
-void testAsteroidBreak(int beenHit){
+void breakAsteroid(int index){
+  // Breaks up the asteroid at which is at 'index' in the asteroid arrays
 
-  if (beenHit == 0 && asteroidLocation.length == 1) { // hit the last asteroid
+    if (index == 0 && asteroidLocation.length == 1) { // if it's the last asteroid
     // Reset asteroids
-    // Increase Asteroid Speed
-    // Increase Score
+    // Increase asteroid speed
+    // Increase score
     return;
-  }
-
-  float newX = asteroidLocation[beenHit].x;
-  float newY = asteroidLocation[beenHit].y;
-  
-  int newNumAsteroids = numAsteroids;
-  if (asteroidSize[beenHit] == 30 || asteroidSize[beenHit] == 20) {
-    newNumAsteroids += 1;
   } else {
-    newNumAsteroids -= 1;
-  }
-  
-  PVector[] tempLocation = new PVector[newNumAsteroids];
-  PVector[] tempDirection = new PVector[newNumAsteroids];
-  PShape[] tempShape = new PShape[newNumAsteroids];
-  int[] tempSize = new int[newNumAsteroids];
-  
-  int ii = 0;
-  if (asteroidSize[beenHit] == 30 || asteroidSize[beenHit] == 20) { // the ones that split
-    for (int i=0; i<numAsteroids; i++) {
-      if (i == beenHit) {i++;}
-      tempLocation[ii] = asteroidLocation[i];
-      tempDirection[ii] = asteroidDirection[i];
-      tempShape[ii] = asteroidShape[i];
-      tempSize[ii] = asteroidSize[i];
-      ii++;
-    }
-    asteroidLocation = tempLocation;
-    asteroidDirection = tempDirection;
-    asteroidShape = tempShape;
-    asteroidSize = tempSize;
-  
-    createAsteroid("small", ii, newX, newY);
-    ii++;
-    createAsteroid("small", ii, newX, newY); 
-  } else {  // is a small asteroid - remove it from the arrays
-    for (int i=0; i<=newNumAsteroids; i++) {
-      if (i == beenHit) {i++;}
-      tempLocation[ii] = asteroidLocation[i];
-      tempDirection[ii] = asteroidDirection[i];
-      tempShape[ii] = asteroidShape[i];
-      tempSize[ii] = asteroidSize[i];
-      ii++;
-    }
-    asteroidLocation = tempLocation;
-    asteroidDirection = tempDirection;
-    asteroidShape = tempShape;
-    asteroidSize = tempSize;
-  }
+    // Break the asteroid into two smaller asteroids
+    // If it's already the smallest sized asteroid, remove it
+    // Come up with a breaking up animation
 
-  numAsteroids = asteroidLocation.length;
-  
+    // The position two new asteroids will be created
+    float newX = asteroidLocation[index].x;
+    float newY = asteroidLocation[index].y;
+    
+    // This block determines the size for the new asteroid arrays
+    // If the asteroid is medium or large, it will split into two smaller
+    // asteroids, so the size of the arrays will need to increase by 1.
+    // If the asteroid is small, then it will be removed so the size of 
+    // the arrays is reduced by 1.
+    int newNumAsteroids = numAsteroids;
+    if (asteroidSize[index] == 30 || asteroidSize[index] == 20) {
+      newNumAsteroids += 1;
+    } else {
+      newNumAsteroids -= 1;
+    }
+    
+    // temporary arrays to store the asteroids
+    PVector[] tempLocation = new PVector[newNumAsteroids];
+    PVector[] tempDirection = new PVector[newNumAsteroids];
+    PShape[] tempShape = new PShape[newNumAsteroids];
+    int[] tempSize = new int[newNumAsteroids];
+    
+    int ii = 0;
+    if (asteroidSize[index] == 30) { // the ones that split
+      for (int i=0; ii<newNumAsteroids-2; i++) {  // -2 because the last two are about to be created
+        if (i == index) {i++;}
+        tempLocation[ii] = asteroidLocation[i];
+        tempDirection[ii] = asteroidDirection[i];
+        tempShape[ii] = asteroidShape[i];
+        tempSize[ii] = asteroidSize[i];
+        ii++;
+      }
+      asteroidLocation = tempLocation;
+      asteroidDirection = tempDirection;
+      asteroidShape = tempShape;
+      asteroidSize = tempSize;
+    
+      createAsteroid("medium", ii, newX, newY);
+      ii++;
+      createAsteroid("medium", ii, newX, newY); 
+    } else if (asteroidSize[index] == 20) { // the ones that split
+      for (int i=0; ii<newNumAsteroids-2; i++) {  // -2 because the last two are about to be created
+        if (i == index) {i++;}
+        tempLocation[ii] = asteroidLocation[i];
+        tempDirection[ii] = asteroidDirection[i];
+        tempShape[ii] = asteroidShape[i];
+        tempSize[ii] = asteroidSize[i];
+        ii++;
+      }
+      asteroidLocation = tempLocation;
+      asteroidDirection = tempDirection;
+      asteroidShape = tempShape;
+      asteroidSize = tempSize;
+    
+      createAsteroid("small", ii, newX, newY);
+      ii++;
+      createAsteroid("small", ii, newX, newY); 
+    } else {  // is a small asteroid - remove it from the arrays
+      for (int i=0; ii<newNumAsteroids; i++) {
+        // loop over the asteroids and add them to the new temporary arrays
+        // skipping the asteroid to be removed
+        if (i == index) {i++;}  // skip the asteroid to be removed
+        tempLocation[ii] = asteroidLocation[i];
+        tempDirection[ii] = asteroidDirection[i];
+        tempShape[ii] = asteroidShape[i];
+        tempSize[ii] = asteroidSize[i];
+        ii++;
+      }
+      asteroidLocation = tempLocation;
+      asteroidDirection = tempDirection;
+      asteroidShape = tempShape;
+      asteroidSize = tempSize;
+    }
+
+    numAsteroids = asteroidLocation.length;
+  }
 }
 
 void moveShip() {
@@ -263,12 +292,20 @@ void drawShip() {
 
 void drawShots() {
    // update the position of the shot
-   // and then draw it
-   // note although the shotLocations disappear from the screen they are in memory forever
-   // we should probably delete them after a period of time
+   
    for (int i=0; i < shotLocations.size(); i++) {
      shotLocations.get(i).add(shotVelocitys.get(i));
      circle(shotLocations.get(i).x, shotLocations.get(i).y, 3);
+     
+     // once the shots have moved off the screen, delete them
+     if (shotLocations.get(i).x < 0 ||
+         shotLocations.get(i).x > width ||
+         shotLocations.get(i).y < 0 ||
+         shotLocations.get(i).y > height) {
+           
+           shotLocations.remove(i);
+           shotVelocitys.remove(i);
+     }    
    }
 }
 
@@ -292,6 +329,29 @@ void drawAsteroids() {
 void collisionDetection() {
   //check if shotLocations have collided with asteroid
   //check if ship as collided with asteroid
+  for (int i = 0; i < numAsteroids; i++) { //check if ship as collided with asteroid
+    //println("asteroidLocation[" + i + "]:", asteroidLocation[i]);
+    if (pow(shipLocation.x - asteroidLocation[i].x, 2) + 
+        pow(shipLocation.y - asteroidLocation[i].y, 2) <= 
+        pow(10 + asteroidSize[i], 2)) {
+      gameOver();
+    }
+  }
+
+  for (int i = 0; i < numAsteroids; i++) { //check if shotLocations have collided with asteroid
+    for (int j = 0; j < shotLocations.size(); j++) {
+      //println("asteroidLocation[" + i + "]:", asteroidLocation[i]);
+      if (pow(shotLocations.get(j).x - asteroidLocation[i].x, 2) + 
+          pow(shotLocations.get(j).y - asteroidLocation[i].y, 2) <= 
+          pow(3 + asteroidSize[i], 2)) {
+
+      //if((abs(shotLocations.get(j).x - asteroidLocation[i].x)<45) && (abs(shotLocations.get(j).y - asteroidLocation[i].y)<45)){  
+        breakAsteroid(i);
+        shotLocations.remove(j);
+        shotVelocitys.remove(j);
+      }
+    }
+  }
 }
 
 void keyPressed() {
@@ -301,7 +361,7 @@ void keyPressed() {
     }
     if (keyCode == DOWN) {
       sDOWN=true;
-      testAsteroidBreak(0);
+      breakAsteroid(int(random(0, numAsteroids-1)));
     } 
     if (keyCode == RIGHT) {
       sRIGHT=true;
@@ -343,6 +403,10 @@ void keyReleased() {
       sLEFT=false;
     }
   }
+}
+
+void gameOver() {
+  
 }
 
 
