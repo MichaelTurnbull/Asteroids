@@ -42,6 +42,7 @@ boolean sUP = false, sDOWN = false, sRIGHT = false, sLEFT = false;
 PFont font;
 int score = 0;
 boolean alive = true;
+float buffer = 100;  // the buffer around the ship that asteroids cannot be created in
 
 
 void setup() {
@@ -158,8 +159,20 @@ void moveShip() {
 
 void createAsteroid(String smallMediumOrLarge){
   // when starting position is not specified, run the function with a
-  // random starting position
-  createAsteroid(smallMediumOrLarge, random(width), random(height));
+  // random starting position - the starting position should not be within
+  // a square shaped buffer of the ship
+  
+  float randomX = random(width);
+  float randomY = random(height);
+  
+  while (abs(randomX-shipLocation.x) < buffer) {
+    randomX = random(width);
+  }
+  while (abs(randomY-shipLocation.y) < buffer) {
+    randomY = random(height);
+  }
+  
+  createAsteroid(smallMediumOrLarge, randomX, randomY);
 }
 
 void createAsteroid(String smallMediumOrLarge, float x, float y) {
@@ -307,7 +320,7 @@ void collisionDetection() {
   for (int i = 0; i < asteroidLocation.size(); i++) {
     for (int j = 0; j < shotLocations.size(); j++) {
 
-      // Lukus wrote this - I don't know how it works but it seems to work really well
+      // Lukus wrote this - I don't know understand it but it works really well
       if (pow(shotLocations.get(j).x - asteroidLocation.get(i).x, 2) + 
           pow(shotLocations.get(j).y - asteroidLocation.get(i).y, 2) <= 
           pow(3 + asteroidSize.get(i), 2)) {
@@ -357,7 +370,7 @@ void keyPressed() {
     }
     if (keyCode == DOWN) {
       sDOWN=true;
-      //breakAsteroid(int(random(0, asteroidLocation.size()-1)));
+      breakAsteroid(int(random(0, asteroidLocation.size()-1)));
     } 
     if (keyCode == RIGHT) {
       sRIGHT=true;
@@ -368,15 +381,18 @@ void keyPressed() {
   }
   if (key == ' ') {  //fire a shot
     
-    // initial shot direction is based on ship's heading
-    PVector newShot = new PVector(cos(shipHeading), sin(shipHeading));
-
-    // set the speed of the shot
-    newShot.setMag(shotSpeed);
-    
-    // add the new shot to the PVector ArrayLists
-    shotLocations.add(new PVector(shipLocation.x, shipLocation.y));
-    shotVelocitys.add(newShot);
+    // don't fire whilst dead
+    if (alive) {
+      // initial shot direction is based on ship's heading
+      PVector newShot = new PVector(cos(shipHeading), sin(shipHeading));
+  
+      // set the speed of the shot
+      newShot.setMag(shotSpeed);
+      
+      // add the new shot to the PVector ArrayLists
+      shotLocations.add(new PVector(shipLocation.x, shipLocation.y));
+      shotVelocitys.add(newShot);
+    }  
   }
 }
 
