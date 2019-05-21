@@ -26,7 +26,7 @@ int numAsteroids = 5;
 int numSides = 12;
 float asteroidSpeed = 1;
 ArrayList<PVector> asteroidLocation = new ArrayList<PVector>();
-ArrayList<PVector> asteroidDirection = new ArrayList<PVector>();
+ArrayList<PVector> asteroidVelocity = new ArrayList<PVector>();
 ArrayList<PShape> asteroidShape = new ArrayList<PShape>();
 IntList asteroidSize = new IntList();
 
@@ -72,8 +72,12 @@ void draw(){
   // report if game over or won
   // draw score
   
-  moveShip();
-  drawShip(sUP);  // sUP is passed so that drawShip() knows when to draw the thrust
+  if (!alive) {  // if dead
+    drawGameOver();
+  } else {
+    moveShip();
+    drawShip(sUP);  // sUP is passed so that drawShip() knows when to draw the thrust
+  }
   collisionDetection();
   drawShots();
   drawAsteroids();
@@ -174,7 +178,7 @@ void createAsteroid(String smallMediumOrLarge, float x, float y) {
   }
 
   asteroidLocation.add(new PVector(x, y));
-  asteroidDirection.add(PVector.random2D().setMag(asteroidSpeed));
+  asteroidVelocity.add(PVector.random2D().setMag(asteroidSpeed));
   asteroidShape.add(generateAsteroidShape(size, numSides));
   asteroidSize.append(size);
 }
@@ -194,13 +198,12 @@ PShape generateAsteroidShape(float radius, int numPoints) {
 }
 
 void drawAsteroids() {
-  // check to see if asteroid is not already destroyed
-  // otherwise draw at location 
-  // initial direction and location should be randomised
-  // also make sure the asteroid has not moved outside of the window
+  // update the position of each asteroid based on it's velocity
+  // keep the asteroid on the screen
+  // draw each asteroid
 
    for (int i = 0; i < asteroidLocation.size(); i++) {
-     asteroidLocation.get(i).add(asteroidDirection.get(i));
+     asteroidLocation.get(i).add(asteroidVelocity.get(i));
      asteroidLocation.set(i, keepOnScreen(asteroidLocation.get(i)));
      
      pushMatrix();
@@ -216,7 +219,7 @@ void breakAsteroid(int index){
   // if it's the last asteroid
   if (index == 0 && asteroidLocation.size() == 1 && asteroidSize.get(index) == 10) {    
     asteroidLocation.remove(index);
-    asteroidDirection.remove(index);
+    asteroidVelocity.remove(index);
     asteroidShape.remove(index);
     asteroidSize.remove(index);
     levelUp();
@@ -232,7 +235,7 @@ void breakAsteroid(int index){
     int size = asteroidSize.get(index);
        
     asteroidLocation.remove(index);
-    asteroidDirection.remove(index);
+    asteroidVelocity.remove(index);
     asteroidShape.remove(index);
     asteroidSize.remove(index);
     
@@ -295,7 +298,8 @@ void collisionDetection() {
     if (pow(shipLocation.x - asteroidLocation.get(i).x, 2) + 
         pow(shipLocation.y - asteroidLocation.get(i).y, 2) <= 
         pow(10 + asteroidSize.get(i), 2)) {
-      gameOver();
+          
+          alive = false;
     }
   }
 
@@ -353,7 +357,7 @@ void keyPressed() {
     }
     if (keyCode == DOWN) {
       sDOWN=true;
-      breakAsteroid(int(random(0, asteroidLocation.size()-1)));
+      //breakAsteroid(int(random(0, asteroidLocation.size()-1)));
     } 
     if (keyCode == RIGHT) {
       sRIGHT=true;
@@ -397,11 +401,15 @@ void keyReleased() {
   }
 }
 
-void gameOver() {
+void drawGameOver() {
   // ship breaks apart
   // some sort of message on the screen
   // display final score
   // ENTER to play again?
   //   if so, reset everything and start again
   
+  push();
+  textAlign(CENTER);
+  text("GAME OVER", width/2, height/2);
+  pop();
 }
