@@ -44,7 +44,9 @@ boolean alive = true;
 
 
 void setup() {
-  size(800,800);
+  size(800,600);
+  stroke(255);
+  noFill();
   
   // initialise pvectors 
   shipLocation = new PVector(width/2, height/2); // ship starts in the middle of the window
@@ -60,7 +62,7 @@ void setup() {
 }
 
 void draw(){
-  background(255);
+  background(0);
   
   // TODO:
   // checking to see if you are still alive
@@ -82,7 +84,6 @@ PShape createShip(){
   PShape newShip;
 
   newShip = createShape();
-  noFill();
   
   newShip.beginShape();
   newShip.vertex(10,0);
@@ -98,7 +99,6 @@ PShape createThrust() {
   PShape newThrust;
   
   newThrust = createShape();
-  noFill();
   
   newThrust.beginShape();
   newThrust.vertex(-9, 2);
@@ -178,7 +178,6 @@ void createAsteroid(String smallMediumOrLarge, float x, float y) {
 PShape generateAsteroidShape(float radius, int numPoints) {
   float angle = TWO_PI / numPoints;
   PShape asteroid = createShape();
-  noFill();
   asteroid.beginShape();
   for (float i = 0; i < TWO_PI; i += angle) {
     float randomRadius = radius + random(-0.5*radius, 0.5*radius);
@@ -249,12 +248,14 @@ void breakAsteroid(int index){
 
 void levelUp() {
   // Reset asteroids
+  // Increase number of asteroids
   // Increase asteroid speed
   // Increase score
+  
+  numAsteroids += 1;
   asteroidSpeed += 0.5;
   for (int i=0; i<numAsteroids; i++) {
     createAsteroid("large");
-    //asteroidDirection.get(i).setMag(asteroidSpeed);
   }
   
 }
