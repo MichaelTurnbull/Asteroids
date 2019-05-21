@@ -12,6 +12,7 @@
 
 // ship related variables
 PShape ship;
+PShape thrust;
 PVector shipLocation;
 PVector shipVelocity;
 PVector shipAcceleration;
@@ -52,11 +53,10 @@ void setup() {
   
   for (int i=0; i<numAsteroids; i++) {
     createAsteroid("large");
-    asteroidDirection.get(i).setMag(asteroidSpeed);
   }
   
   ship = createShip();
-  
+  thrust = createThrust();
 }
 
 void draw(){
@@ -68,12 +68,15 @@ void draw(){
   // draw score
   
   moveShip();
-  drawShip();
+  drawShip(sUP);  // sUP is passed so that drawShip() knows when to draw the thrust
   collisionDetection();
   drawShots();
   drawAsteroids();
 }
 
+//
+// -- ship related functions -- //
+//
 
 PShape createShip(){
   PShape newShip;
@@ -90,6 +93,60 @@ PShape createShip(){
   
   return newShip;
 }
+
+PShape createThrust() {
+  PShape newThrust;
+  
+  newThrust = createShape();
+  noFill();
+  
+  newThrust.beginShape();
+  newThrust.vertex(-9, 2);
+  newThrust.vertex(-14, 0);
+  newThrust.vertex(-9, -2);
+  newThrust.endShape();
+  
+  return newThrust;
+}
+
+void drawShip(boolean thrustOn) {
+  pushMatrix();
+  translate(shipLocation.x, shipLocation.y);
+  rotate(shipHeading);
+  shape(ship);
+  if (thrustOn) {
+    shape(thrust);
+  }
+  popMatrix();
+}
+
+void moveShip() {
+  if(sUP){
+    shipAcceleration = new PVector(cos(shipHeading), sin(shipHeading)); // accel direction
+    shipAcceleration.setMag(accelerationRate); // acceleration magnitude
+    shipVelocity.add(shipAcceleration);
+    shipVelocity.limit(maxSpeed);
+  }
+  
+  if(sDOWN){
+
+  }
+  
+  if(sRIGHT){
+    shipHeading += turnRate;
+  }
+  
+  if(sLEFT){
+    shipHeading -= turnRate;
+  }
+  
+  shipLocation.add(shipVelocity);
+
+  // TODO: write keepOnScreen as an extension to the PVector class if possible
+  shipLocation = keepOnScreen(shipLocation);
+}
+
+// -- asteroid related functions -- //
 
 void createAsteroid(String smallMediumOrLarge){
   // when starting position is not specified, run the function with a
@@ -113,7 +170,7 @@ void createAsteroid(String smallMediumOrLarge, float x, float y) {
   }
 
   asteroidLocation.add(new PVector(x, y));
-  asteroidDirection.add(PVector.random2D());
+  asteroidDirection.add(PVector.random2D().setMag(asteroidSpeed));
   asteroidShape.add(generateAsteroidShape(size, numSides));
   asteroidSize.append(size);
 }
@@ -131,6 +188,23 @@ PShape generateAsteroidShape(float radius, int numPoints) {
   }
   asteroid.endShape(CLOSE);
   return asteroid;
+}
+
+void drawAsteroids() {
+  // check to see if asteroid is not already destroyed
+  // otherwise draw at location 
+  // initial direction and location should be randomised
+  // also make sure the asteroid has not moved outside of the window
+
+   for (int i = 0; i < asteroidLocation.size(); i++) {
+     asteroidLocation.get(i).add(asteroidDirection.get(i));
+     asteroidLocation.set(i, keepOnScreen(asteroidLocation.get(i)));
+     
+     pushMatrix();
+     translate(asteroidLocation.get(i).x, asteroidLocation.get(i).y);
+     shape(asteroidShape.get(i));
+     popMatrix();
+   }
 }
 
 void breakAsteroid(int index){
@@ -166,67 +240,31 @@ void breakAsteroid(int index){
       createAsteroid("small", newX, newY);
       createAsteroid("small", newX, newY);
     }
-
-    numAsteroids = asteroidLocation.size();
   }
 }
+
+//
+// -- game related functions -- //
+//
 
 void levelUp() {
   // Reset asteroids
   // Increase asteroid speed
   // Increase score
-  numAsteroids = 5;
   asteroidSpeed += 0.5;
   for (int i=0; i<numAsteroids; i++) {
     createAsteroid("large");
-    asteroidDirection.get(i).setMag(asteroidSpeed);
+    //asteroidDirection.get(i).setMag(asteroidSpeed);
   }
   
 }
 
-
-void moveShip() {
-  
-  if(sUP){
-    shipAcceleration = new PVector(cos(shipHeading), sin(shipHeading)); // accel direction
-    shipAcceleration.setMag(accelerationRate); // acceleration magnitude
-    shipVelocity.add(shipAcceleration);
-    shipVelocity.limit(maxSpeed);
-  }
-  
-  if(sDOWN){
-
-  }
-  
-  if(sRIGHT){
-    shipHeading += turnRate;
-  }
-  
-  if(sLEFT){
-    shipHeading -= turnRate;
-  }
-  
-  shipLocation.add(shipVelocity);
-
-  // TODO: write keepOnScreen as an extension to the PVector class if possible
-  shipLocation = keepOnScreen(shipLocation);
-}
-
-
-/**************************************************************
-* Function: keepOnScreen()
-
-* Parameters: a PVector
-
-* Returns: the PVector that has been corrected to stay on the screen)
-
-* Desc: Takes a PVector parameter (like the coords of the ship or an asteroid).
-        Tests to see if any of the coordinated have reached a screen boundary
-        and if they have, changes the coordinates to be on the other side of the 
-        window.
-***************************************************************/
 PVector keepOnScreen(PVector coord){
-  
+  // Takes a PVector parameter (like the coords of the ship or an asteroid).
+  // Tests to see if any of the coordinates have reached a screen boundary
+  // and if they have, changes the coordinates to be on the other side of the 
+  // window.
+
   if (coord.y > height) {
     coord.y = 0;
   }
@@ -243,54 +281,10 @@ PVector keepOnScreen(PVector coord){
   return coord;
 }
 
-void drawShip() {
-  pushMatrix();
-  translate(shipLocation.x, shipLocation.y);
-  rotate(shipHeading);
-  shape(ship);
-  popMatrix();
-}
-
-void drawShots() {
-   // update the position of the shot
-   
-   for (int i=0; i < shotLocations.size(); i++) {
-     shotLocations.get(i).add(shotVelocitys.get(i));
-     circle(shotLocations.get(i).x, shotLocations.get(i).y, 3);
-     
-     // once the shots have moved off the screen, delete them
-     if (shotLocations.get(i).x < 0 ||
-         shotLocations.get(i).x > width ||
-         shotLocations.get(i).y < 0 ||
-         shotLocations.get(i).y > height) {
-           
-           shotLocations.remove(i);
-           shotVelocitys.remove(i);
-     }    
-   }
-}
-
-void drawAsteroids() {
-  //check to see if asteroid is not already destroyed
-  //otherwise draw at location 
-  //initial direction and location should be randomised
-  //also make sure the asteroid has not moved outside of the window
-
-   for (int i = 0; i < numAsteroids; i++) {
-     asteroidLocation.get(i).add(asteroidDirection.get(i));
-     asteroidLocation.set(i, keepOnScreen(asteroidLocation.get(i)));
-     
-     pushMatrix();
-     translate(asteroidLocation.get(i).x, asteroidLocation.get(i).y);
-     shape(asteroidShape.get(i));
-     popMatrix();
-   }
-}
-
 void collisionDetection() {
   
   // check if ship has collided with asteroids
-  for (int i = 0; i < numAsteroids; i++) {
+  for (int i = 0; i < asteroidLocation.size(); i++) {
     if (pow(shipLocation.x - asteroidLocation.get(i).x, 2) + 
         pow(shipLocation.y - asteroidLocation.get(i).y, 2) <= 
         pow(10 + asteroidSize.get(i), 2)) {
@@ -299,7 +293,7 @@ void collisionDetection() {
   }
 
   // check if shots have collided with asteroids
-  for (int i = 0; i < numAsteroids; i++) {
+  for (int i = 0; i < asteroidLocation.size(); i++) {
     for (int j = 0; j < shotLocations.size(); j++) {
 
       // Lukus wrote this - I don't know how it works but it seems to work really well
@@ -320,6 +314,26 @@ void collisionDetection() {
   }
 }
 
+void drawShots() {
+   // update the position of the shots
+   for (int i=0; i < shotLocations.size(); i++) {
+     shotLocations.get(i).add(shotVelocitys.get(i));
+     
+     // draw the shot
+     circle(shotLocations.get(i).x, shotLocations.get(i).y, 3);
+     
+     // once the shots have moved off the screen, delete them
+     if (shotLocations.get(i).x < 0 ||
+         shotLocations.get(i).x > width ||
+         shotLocations.get(i).y < 0 ||
+         shotLocations.get(i).y > height) {
+           
+           shotLocations.remove(i);
+           shotVelocitys.remove(i);
+     }    
+   }
+}
+
 void keyPressed() {
   if (key == CODED) {
     if (keyCode == UP) {
@@ -327,7 +341,7 @@ void keyPressed() {
     }
     if (keyCode == DOWN) {
       sDOWN=true;
-      breakAsteroid(int(random(0, numAsteroids-1)));
+      breakAsteroid(int(random(0, asteroidLocation.size()-1)));
     } 
     if (keyCode == RIGHT) {
       sRIGHT=true;
@@ -372,6 +386,7 @@ void keyReleased() {
 }
 
 void gameOver() {
+  
   
 }
 
