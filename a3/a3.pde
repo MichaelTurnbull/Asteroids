@@ -1,13 +1,13 @@
-/************************************************************** //<>//
+/**************************************************************
 * File: a3.pde
 * Group: Leigh West, Michael Turnbull, Lukas Dimitrios
 * Date: 
 * Course: COSC101 - Software Development Studio 1
-* Desc: asteroid is a ...
-* ...
-* Usage: Make sure to run in the processing environment and press play etc...
-* Notes: If any third party items are use they need to be credited (don't use anything with copyright - unless you have permission)
-* ...
+* Desc: This is a remake of the game Asteroids
+* Usage: Open this file in the processing environment and press play
+* Notes: Font used is Hyperspace by Neale Davidson from
+         https://www.dafont.com/hyperspace.font and is used under
+         the shareware/font licence
 **************************************************************/
 
 // ship related variables
@@ -24,6 +24,9 @@ float shipHeading = radians(270); // ship starts facing up
 // asteroid related variables
 int numAsteroids = 5;
 int numSides = 12;
+int small = 10;
+int medium = 20;
+int large = 30;
 float asteroidSpeed = 1;
 ArrayList<PVector> asteroidLocation = new ArrayList<PVector>();
 ArrayList<PVector> asteroidVelocity = new ArrayList<PVector>();
@@ -39,10 +42,10 @@ float shotSpeed = 5;
 
 // game related variables
 boolean sUP = false, sDOWN = false, sRIGHT = false, sLEFT = false;
+boolean alive = true;
 PFont font;
 int score = 0;
-boolean alive = true;
-float buffer = 100;  // the buffer around the ship that asteroids cannot be created in
+float buffer = 100;  // buffer around ship that asteroids cannot be created in
 
 
 void setup() {
@@ -53,12 +56,12 @@ void setup() {
   textFont(font, 25);
   
   // initialise pvectors 
-  shipLocation = new PVector(width/2, height/2); // ship starts in the middle of the window
+  shipLocation = new PVector(width/2, height/2); // starts at center screen
   shipVelocity = new PVector(0, 0);   // ship starts stationary
   shipAcceleration = new PVector(0,0); // and with no acceleration
   
   for (int i=0; i<numAsteroids; i++) {
-    createAsteroid("large");
+    createAsteroid(large);
   }
   
   ship = createShip();
@@ -68,16 +71,11 @@ void setup() {
 void draw(){
   background(0);
   
-  // TODO:
-  // checking to see if you are still alive
-  // report if game over or won
-  // draw score
-  
   if (!alive) {  // if dead
     drawGameOver();
   } else {
     moveShip();
-    drawShip(sUP);  // sUP is passed so that drawShip() knows when to draw the thrust
+    drawShip(sUP);  // sUP is passed so that drawShip() knows to draw thrust
   }
   collisionDetection();
   drawShots();
@@ -130,6 +128,9 @@ void drawShip(boolean thrustOn) {
 }
 
 void moveShip() {
+  // move ship based on boolean values that are set by key input
+  // this makes for smoother ship movement
+
   if(sUP){
     shipAcceleration = new PVector(cos(shipHeading), sin(shipHeading)); // accel direction
     shipAcceleration.setMag(accelerationRate); // acceleration magnitude
@@ -150,17 +151,15 @@ void moveShip() {
   }
   
   shipLocation.add(shipVelocity);
-
-  // TODO: write keepOnScreen as an extension to the PVector class if possible
   shipLocation = keepOnScreen(shipLocation);
 }
 
 // -- asteroid related functions -- //
 
-void createAsteroid(String smallMediumOrLarge){
+void createAsteroid(int size){
   // when starting position is not specified, run the function with a
   // random starting position - the starting position should not be within
-  // a square shaped buffer of the ship
+  // a square shaped buffer around the ship
   
   float randomX = random(width);
   float randomY = random(height);
@@ -172,23 +171,14 @@ void createAsteroid(String smallMediumOrLarge){
     randomY = random(height);
   }
   
-  createAsteroid(smallMediumOrLarge, randomX, randomY);
+  createAsteroid(size, randomX, randomY);
 }
 
-void createAsteroid(String smallMediumOrLarge, float x, float y) {
-  int size = 0;
-
-  switch (smallMediumOrLarge) {
-    case "large": 
-      size = 30;
-      break;
-    case "medium":
-      size = 20;
-      break;
-    case "small":
-      size = 10;
-      break;
-  }
+void createAsteroid(int size, float x, float y) {
+  // creates either a small, medium, or large asteroid at position (x, y)
+  // and adds its details to the ArrayLists that store them.
+  // the initial direction is random and the speed is based on what level of
+  // the game you're on. shape is generated randomly by generateAsteroidShape()
 
   asteroidLocation.add(new PVector(x, y));
   asteroidVelocity.add(PVector.random2D().setMag(asteroidSpeed));
@@ -197,6 +187,12 @@ void createAsteroid(String smallMediumOrLarge, float x, float y) {
 }
 
 PShape generateAsteroidShape(float radius, int numPoints) {
+  // generates a random asteroid shape by first dividing a circle with an
+  // arbitrary number of equally spaced radials. for each radial, pick a
+  // point along it that is a random number equal to +/- half the radius of
+  // the circle. calculate the coordinates of each of those points and then
+  // draw lines between them.
+
   float angle = TWO_PI / numPoints;
   PShape asteroid = createShape();
   asteroid.beginShape();
@@ -230,34 +226,40 @@ void breakAsteroid(int index){
   // Breaks up the asteroid at which is at 'index' in the asteroid arrays
 
   // if it's the last asteroid
-  if (index == 0 && asteroidLocation.size() == 1 && asteroidSize.get(index) == 10) {    
+  if (index == 0 && 
+      asteroidLocation.size() == 1 && 
+      asteroidSize.get(index) == 10) {
+
     asteroidLocation.remove(index);
     asteroidVelocity.remove(index);
     asteroidShape.remove(index);
     asteroidSize.remove(index);
+
     levelUp();
     return;
   } else {
     // Break the asteroid into two smaller asteroids
     // If it's already the smallest sized asteroid, remove it
-    // Come up with a breaking up animation
+    // TODO: Come up with a breaking up animation
 
     // The position that the two new asteroids will be created
     float newX = asteroidLocation.get(index).x;
     float newY = asteroidLocation.get(index).y;
     int size = asteroidSize.get(index);
        
+    // remove the old asteroid
     asteroidLocation.remove(index);
     asteroidVelocity.remove(index);
     asteroidShape.remove(index);
     asteroidSize.remove(index);
     
+    // create the new asteroids (if not the smallest size already)
     if (size == 30) {
-      createAsteroid("medium", newX, newY);
-      createAsteroid("medium", newX, newY);
+      createAsteroid(medium, newX, newY);
+      createAsteroid(medium, newX, newY);
     } else if (size == 20) {
-      createAsteroid("small", newX, newY);
-      createAsteroid("small", newX, newY);
+      createAsteroid(small, newX, newY);
+      createAsteroid(small, newX, newY);
     }
   }
 }
@@ -277,7 +279,7 @@ void levelUp() {
   score += 100;
   
   for (int i=0; i<numAsteroids; i++) {
-    createAsteroid("large");
+    createAsteroid(large);
   }
   
 }
@@ -286,7 +288,7 @@ PVector keepOnScreen(PVector coord){
   // Takes a PVector parameter (like the coords of the ship or an asteroid).
   // Tests to see if any of the coordinates have reached a screen boundary
   // and if they have, changes the coordinates to be on the other side of the 
-  // window.
+  // window. Returns the new coordinates as a PVector.
 
   if (coord.y > height) {
     coord.y = 0;
@@ -330,9 +332,9 @@ void collisionDetection() {
         shotVelocitys.remove(j);
         score += 10;
         
-        // breaking out of the loop after shots have been removed from the ArrayList  stops
-        // the program crashing by trying to test against a value that's no longer there
-        // It took two days to work this out
+        // breaking out of the loop after shots have been removed from the 
+        // ArrayList  stops the program crashing by trying to test against a
+        // value that's no longer there. It took two days to work this out
         break;
       }
     }
@@ -370,7 +372,7 @@ void keyPressed() {
     }
     if (keyCode == DOWN) {
       sDOWN=true;
-      breakAsteroid(int(random(0, asteroidLocation.size()-1)));
+      breakAsteroid(int(random(0, asteroidLocation.size()-1)));  // for testing
     } 
     if (keyCode == RIGHT) {
       sRIGHT=true;
@@ -379,7 +381,8 @@ void keyPressed() {
       sLEFT=true;
     }
   }
-  if (key == ' ') {  //fire a shot
+  if (key == ' ') {
+    //fire a shot
     
     // don't fire whilst dead
     if (alive) {
@@ -429,3 +432,5 @@ void drawGameOver() {
   text("GAME OVER", width/2, height/2);
   pop();
 }
+
+
