@@ -405,19 +405,3 @@ void gameOver() {
   //   if so, reset everything and start again
   
 }
-
-
-
-// Left down here as a template
-/**************************************************************
-* Function: myFunction()
-
-* Parameters: None ( could be integer(x), integer(y) or String(myStr))
-
-* Returns: Void ( again this could return a String or integer/float type )
-
-* Desc: Each funciton should have appropriate documentation. 
-        This is designed to benefit both the marker and your team mates.
-        So it is better to keep it up to date, same with usage in the header comment
-
-***************************************************************/
