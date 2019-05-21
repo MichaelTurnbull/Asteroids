@@ -26,7 +26,7 @@ int numAsteroids = 5;
 int numSides = 12;
 float asteroidSpeed = 1;
 ArrayList<PVector> asteroidLocation = new ArrayList<PVector>();
-ArrayList<PVector> asteroidDirection = new ArrayList<PVector>();
+ArrayList<PVector> asteroidVelocity = new ArrayList<PVector>();
 ArrayList<PShape> asteroidShape = new ArrayList<PShape>();
 IntList asteroidSize = new IntList();
 
@@ -155,6 +155,7 @@ void createAsteroid(String smallMediumOrLarge){
 }
 
 void createAsteroid(String smallMediumOrLarge, float x, float y) {
+  // creates an asteroid of the desired size (small, medium or large) in the specified coordinates
   int size = 0;
 
   switch (smallMediumOrLarge) {
@@ -170,7 +171,8 @@ void createAsteroid(String smallMediumOrLarge, float x, float y) {
   }
 
   asteroidLocation.add(new PVector(x, y));
-  asteroidDirection.add(PVector.random2D().setMag(asteroidSpeed));
+  // set a random direction, and set the speed
+  asteroidVelocity.add(PVector.random2D().setMag(asteroidSpeed));
   asteroidShape.add(generateAsteroidShape(size, numSides));
   asteroidSize.append(size);
 }
@@ -196,7 +198,7 @@ void drawAsteroids() {
   // also make sure the asteroid has not moved outside of the window
 
    for (int i = 0; i < asteroidLocation.size(); i++) {
-     asteroidLocation.get(i).add(asteroidDirection.get(i));
+     asteroidLocation.get(i).add(asteroidVelocity.get(i));
      asteroidLocation.set(i, keepOnScreen(asteroidLocation.get(i)));
      
      pushMatrix();
@@ -210,13 +212,16 @@ void breakAsteroid(int index){
   // Breaks up the asteroid at which is at 'index' in the asteroid arrays
 
   // if it's the last asteroid
-  if (index == 0 && asteroidLocation.size() == 1 && asteroidSize.get(index) == 10) {    
+  if (index == 0 && asteroidLocation.size() == 1 && asteroidSize.get(index) == 10) {
+    // remove the asteroid and level up 
     asteroidLocation.remove(index);
-    asteroidDirection.remove(index);
+    asteroidVelocity.remove(index);
     asteroidShape.remove(index);
     asteroidSize.remove(index);
+
     levelUp();
     return;
+
   } else {
     // Break the asteroid into two smaller asteroids
     // If it's already the smallest sized asteroid, remove it
@@ -228,7 +233,7 @@ void breakAsteroid(int index){
     int size = asteroidSize.get(index);
        
     asteroidLocation.remove(index);
-    asteroidDirection.remove(index);
+    asteroidVelocity.remove(index);
     asteroidShape.remove(index);
     asteroidSize.remove(index);
     
@@ -289,6 +294,7 @@ void collisionDetection() {
     if (pow(shipLocation.x - asteroidLocation.get(i).x, 2) + 
         pow(shipLocation.y - asteroidLocation.get(i).y, 2) <= 
         pow(10 + asteroidSize.get(i), 2)) {
+
       gameOver();
     }
   }
