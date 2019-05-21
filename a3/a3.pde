@@ -1,4 +1,4 @@
-/**************************************************************
+/************************************************************** //<>//
 * File: a3.pde
 * Group: Leigh West, Michael Turnbull, Lukas Dimitrios
 * Date: 
@@ -26,7 +26,7 @@ int numAsteroids = 5;
 int numSides = 12;
 float asteroidSpeed = 1;
 ArrayList<PVector> asteroidLocation = new ArrayList<PVector>();
-ArrayList<PVector> asteroidVelocity = new ArrayList<PVector>();
+ArrayList<PVector> asteroidDirection = new ArrayList<PVector>();
 ArrayList<PShape> asteroidShape = new ArrayList<PShape>();
 IntList asteroidSize = new IntList();
 
@@ -35,18 +35,21 @@ IntList asteroidSize = new IntList();
 // recreating the array each time
 ArrayList<PVector> shotLocations = new ArrayList<PVector>();
 ArrayList<PVector> shotVelocitys = new ArrayList<PVector>();
-float shotSpeed = 4;
+float shotSpeed = 5;
 
 // game related variables
 boolean sUP = false, sDOWN = false, sRIGHT = false, sLEFT = false;
+PFont font;
 int score = 0;
 boolean alive = true;
 
 
 void setup() {
-  size(800,600);
+  size(800,700);
   stroke(255);
   noFill();
+  font = loadFont("Hyperspace-25.vlw");
+  textFont(font, 25);
   
   // initialise pvectors 
   shipLocation = new PVector(width/2, height/2); // ship starts in the middle of the window
@@ -74,6 +77,7 @@ void draw(){
   collisionDetection();
   drawShots();
   drawAsteroids();
+  drawScore();
 }
 
 //
@@ -155,7 +159,6 @@ void createAsteroid(String smallMediumOrLarge){
 }
 
 void createAsteroid(String smallMediumOrLarge, float x, float y) {
-  // creates an asteroid of the desired size (small, medium or large) in the specified coordinates
   int size = 0;
 
   switch (smallMediumOrLarge) {
@@ -171,8 +174,7 @@ void createAsteroid(String smallMediumOrLarge, float x, float y) {
   }
 
   asteroidLocation.add(new PVector(x, y));
-  // set a random direction, and set the speed
-  asteroidVelocity.add(PVector.random2D().setMag(asteroidSpeed));
+  asteroidDirection.add(PVector.random2D().setMag(asteroidSpeed));
   asteroidShape.add(generateAsteroidShape(size, numSides));
   asteroidSize.append(size);
 }
@@ -198,7 +200,7 @@ void drawAsteroids() {
   // also make sure the asteroid has not moved outside of the window
 
    for (int i = 0; i < asteroidLocation.size(); i++) {
-     asteroidLocation.get(i).add(asteroidVelocity.get(i));
+     asteroidLocation.get(i).add(asteroidDirection.get(i));
      asteroidLocation.set(i, keepOnScreen(asteroidLocation.get(i)));
      
      pushMatrix();
@@ -212,16 +214,13 @@ void breakAsteroid(int index){
   // Breaks up the asteroid at which is at 'index' in the asteroid arrays
 
   // if it's the last asteroid
-  if (index == 0 && asteroidLocation.size() == 1 && asteroidSize.get(index) == 10) {
-    // remove the asteroid and level up 
+  if (index == 0 && asteroidLocation.size() == 1 && asteroidSize.get(index) == 10) {    
     asteroidLocation.remove(index);
-    asteroidVelocity.remove(index);
+    asteroidDirection.remove(index);
     asteroidShape.remove(index);
     asteroidSize.remove(index);
-
     levelUp();
     return;
-
   } else {
     // Break the asteroid into two smaller asteroids
     // If it's already the smallest sized asteroid, remove it
@@ -233,7 +232,7 @@ void breakAsteroid(int index){
     int size = asteroidSize.get(index);
        
     asteroidLocation.remove(index);
-    asteroidVelocity.remove(index);
+    asteroidDirection.remove(index);
     asteroidShape.remove(index);
     asteroidSize.remove(index);
     
@@ -252,13 +251,15 @@ void breakAsteroid(int index){
 //
 
 void levelUp() {
-  // Reset asteroids
-  // Increase number of asteroids
-  // Increase asteroid speed
-  // Increase score
+  // increase number of asteroids
+  // increase asteroid speed
+  // increase score
+  // draw new asteroids
   
   numAsteroids += 1;
   asteroidSpeed += 0.5;
+  score += 100;
+  
   for (int i=0; i<numAsteroids; i++) {
     createAsteroid("large");
   }
@@ -294,7 +295,6 @@ void collisionDetection() {
     if (pow(shipLocation.x - asteroidLocation.get(i).x, 2) + 
         pow(shipLocation.y - asteroidLocation.get(i).y, 2) <= 
         pow(10 + asteroidSize.get(i), 2)) {
-
       gameOver();
     }
   }
@@ -311,6 +311,7 @@ void collisionDetection() {
         breakAsteroid(i);
         shotLocations.remove(j);
         shotVelocitys.remove(j);
+        score += 10;
         
         // breaking out of the loop after shots have been removed from the ArrayList  stops
         // the program crashing by trying to test against a value that's no longer there
@@ -339,6 +340,10 @@ void drawShots() {
            shotVelocitys.remove(i);
      }    
    }
+}
+
+void drawScore() {
+  text(str(score), 20, 40);
 }
 
 void keyPressed() {
@@ -393,7 +398,11 @@ void keyReleased() {
 }
 
 void gameOver() {
-  
+  // ship breaks apart
+  // some sort of message on the screen
+  // display final score
+  // ENTER to play again?
+  //   if so, reset everything and start again
   
 }
 
