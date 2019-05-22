@@ -137,15 +137,12 @@ void moveShip() {
     shipVelocity.add(shipAcceleration);
     shipVelocity.limit(maxSpeed);
   }
-  
   if(sDOWN){
 
   }
-  
   if(sRIGHT){
     shipHeading += turnRate;
   }
-  
   if(sLEFT){
     shipHeading -= turnRate;
   }
