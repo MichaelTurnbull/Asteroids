@@ -9,6 +9,7 @@
          https://www.dafont.com/hyperspace.font and is used under
          the shareware/font licence
 **************************************************************/
+import ddf.minim.*;
 
 // ship related variables
 PShape ship;
@@ -47,6 +48,13 @@ PFont font;
 int score = 0;
 float buffer = 100;  // buffer around ship that asteroids cannot be created in
 
+// sound related variables
+Minim minim;
+AudioPlayer themeSong;
+AudioPlayer thrustSound;
+AudioSample asteroidExplosion;
+AudioPlayer shipExplosion;
+AudioSample missile;
 
 void setup() {
   size(800,700);
@@ -66,6 +74,14 @@ void setup() {
   
   ship = createShip();
   thrust = createThrust();
+
+  minim = new Minim(this);
+  themeSong = minim.loadFile("background.mp3");
+  thrustSound = minim.loadFile("thrust.mp3");
+  missile = minim.loadSample("fire.wav");
+  asteroidExplosion = minim.loadSample("bangSmall.wav");
+  shipExplosion = minim.loadFile("bangLarge.wav");
+  themeSong.play();
 }
 
 void draw(){
@@ -312,6 +328,8 @@ void collisionDetection() {
         pow(10 + asteroidSize.get(i), 2)) {
           
           alive = false;
+          thrustSound.pause();
+          shipExplosion.play();
     }
   }
 
@@ -323,6 +341,8 @@ void collisionDetection() {
       if (pow(shotLocations.get(j).x - asteroidLocation.get(i).x, 2) + 
           pow(shotLocations.get(j).y - asteroidLocation.get(i).y, 2) <= 
           pow(3 + asteroidSize.get(i), 2)) {
+
+        asteroidExplosion.trigger();
 
         breakAsteroid(i);
         shotLocations.remove(j);
@@ -366,6 +386,9 @@ void keyPressed() {
   if (key == CODED) {
     if (keyCode == UP) {
       sUP=true;
+      if (alive) {  // stops being able to trigger the sounds when dead
+        thrustSound.play();
+      }
     }
     if (keyCode == DOWN) {
       sDOWN=true;
@@ -392,6 +415,9 @@ void keyPressed() {
       // add the new shot to the PVector ArrayLists
       shotLocations.add(new PVector(shipLocation.x, shipLocation.y));
       shotVelocitys.add(newShot);
+
+      // play missile sound
+      missile.trigger();
     }  
   }
 }
@@ -404,6 +430,7 @@ void keyReleased() {
   if (key == CODED) {
     if (keyCode == UP) {
       sUP=false;
+      thrustSound.pause();
     }
     if (keyCode == DOWN) {
       sDOWN=false;
