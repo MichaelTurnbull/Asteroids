@@ -41,6 +41,14 @@ ArrayList<PVector> shotLocations = new ArrayList<PVector>();
 ArrayList<PVector> shotVelocitys = new ArrayList<PVector>();
 float shotSpeed = 5;
 
+//debris related variables, adjusting debrisCount changes the number of debris particles spawned and adjusting debrisAge changes the lifespan of the debris
+ArrayList<PVector> debrisLocations = new ArrayList<PVector>();
+ArrayList<PVector> debrisVelocitys = new ArrayList<PVector>();
+IntList debrisAges = new IntList();
+float debrisSpeed = 3;
+int debrisCount = 4;
+int debrisAge = 50;
+
 // game related variables
 boolean sUP = false, sDOWN = false, sRIGHT = false, sLEFT = false;
 boolean alive = true;
@@ -96,6 +104,7 @@ void draw(){
   collisionDetection();
   drawShots();
   drawAsteroids();
+  drawDebris();
   drawScore();
 }
 
@@ -238,6 +247,17 @@ void drawAsteroids() {
 void breakAsteroid(int index){
   // Breaks up the asteroid at which is at 'index' in the asteroid arrays
 
+  //create the debris for the explosion effect
+  //has to be placed before the removal of the asteroid from the arrays otherwise the debris is in the wrong spot
+    for (int i = 1; i <= debrisCount; i++) {
+      PVector newDebris = new PVector(random(-90, 90), random(-90, 90));
+      newDebris.setMag(debrisSpeed);
+      debrisLocations.add(new PVector(asteroidLocation.get(index).x, asteroidLocation.get(index).y));
+      debrisVelocitys.add(newDebris);
+      debrisAges.append(1);
+    }
+    
+    
   // if it's the last asteroid
   if (index == 0 && 
       asteroidLocation.size() == 1 && 
@@ -259,7 +279,7 @@ void breakAsteroid(int index){
     float newX = asteroidLocation.get(index).x;
     float newY = asteroidLocation.get(index).y;
     int size = asteroidSize.get(index);
-       
+    
     // remove the old asteroid
     asteroidLocation.remove(index);
     asteroidVelocity.remove(index);
@@ -378,6 +398,21 @@ void drawShots() {
    }
 }
 
+void drawDebris() {
+  for (int i=0; i < debrisLocations.size(); i++) {
+    debrisAges.add(i, 1);
+    debrisLocations.get(i).add(debrisVelocitys.get(i));
+
+    circle(debrisLocations.get(i).x, debrisLocations.get(i).y, 2);
+
+    if (int(debrisAges.get(i)) > debrisAge) {
+      debrisLocations.remove(i);
+      debrisVelocitys.remove(i);
+      debrisAges.remove(i);
+    }
+  }
+}
+
 void drawScore() {
   text(str(score), 20, 40);
 }
@@ -408,7 +443,7 @@ void keyPressed() {
     if (alive) {
       // initial shot direction is based on ship's heading
       PVector newShot = new PVector(cos(shipHeading), sin(shipHeading));
-  
+
       // set the speed of the shot
       newShot.setMag(shotSpeed);
       
@@ -456,5 +491,3 @@ void drawGameOver() {
   text("GAME OVER", width/2, height/2);
   pop();
 }
-
-
