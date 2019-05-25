@@ -90,6 +90,7 @@ void setup() {
   asteroidExplosion = minim.loadSample("bangSmall.wav");
   shipExplosion = minim.loadFile("bangLarge.wav");
   themeSong.play();
+  themeSong.loop();
 }
 
 void draw(){
@@ -350,6 +351,7 @@ void collisionDetection() {
           alive = false;
           thrustSound.pause();
           shipExplosion.play();
+          
     }
   }
 
@@ -435,6 +437,7 @@ void keyPressed() {
     if (keyCode == LEFT) {
       sLEFT=true;
     }
+    
   }
   if (key == ' ') {
     //fire a shot
@@ -453,8 +456,15 @@ void keyPressed() {
 
       // play missile sound
       missile.trigger();
-    }  
+    }
+    
+    
   }
+  if (key == ENTER && !alive){
+    gameRestart();
+  }
+    
+    
 }
 
 void keyReleased() {
@@ -489,5 +499,29 @@ void drawGameOver() {
   push();
   textAlign(CENTER);
   text("GAME OVER", width/2, height/2);
+  text("Press enter to restart", width/2, height/2+50);
   pop();
+}
+
+void gameRestart(){
+  alive = true;
+  // initialise pvectors 
+  shipLocation = new PVector(width/2, height/2); // starts at center screen
+  shipVelocity = new PVector(0, 0);   // ship starts stationary
+  shipAcceleration = new PVector(0,0); // and with no acceleration
+  
+  asteroidLocation.clear();
+  asteroidVelocity.clear();
+  asteroidShape.clear();
+  asteroidSize.clear();
+  shotLocations.clear();
+  shotVelocitys.clear();
+  
+  for (int i=0; i<numAsteroids; i++) {
+    createAsteroid(large);
+  }
+  
+  ship = createShip();
+  thrust = createThrust();
+  shipExplosion.rewind();
 }
