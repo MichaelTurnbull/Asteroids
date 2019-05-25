@@ -1,11 +1,19 @@
 /**************************************************************
 * File: a3.pde
 * Group: Leigh West, Michael Turnbull, Lukas Dimitrios
-* Date: 
+* Date: 26 MAY 19
 * Course: COSC101 - Software Development Studio 1
 * Desc: This is a remake of the game Asteroids
 * Usage: Open this file in the processing environment and press play
-* Notes: Font used is Hyperspace by Neale Davidson from
+* Notes: The Minim library needs to be installed before running. Install
+         by going to Sketch --> Import Library --> Add Library. Search for
+         minim in the filter field and then click install on the bottom 
+         right corner
+
+         Sounds used come from 
+         http://www.classicgaming.cc/classics/asteroids/sounds
+
+         Font used is Hyperspace by Neale Davidson from
          https://www.dafont.com/hyperspace.font and is used under
          the shareware/font licence
 **************************************************************/
@@ -113,6 +121,13 @@ void draw(){
 // -- ship related functions -- //
 //
 
+/**************************************************************
+* Function: createShip()
+* Parameters: none
+* Returns: a PShape representing a ship
+* Desc: Creates a PShape object from a series of vertexes that form the shape 
+        of a ship
+***************************************************************/
 PShape createShip(){
   PShape newShip;
 
@@ -128,6 +143,14 @@ PShape createShip(){
   return newShip;
 }
 
+/**************************************************************
+* Function: createThrust()
+* Parameters: none
+* Returns: a PShape representing the thrust coming out the back of a ship
+* Desc: Creates a PShape object from a series of vertexes that form the shape 
+        of the ships thrust. It is a separate PShape so that it can be drawn
+        or not drawn depending on whether the ship is 'thrustuing'
+***************************************************************/
 PShape createThrust() {
   PShape newThrust;
   
@@ -142,6 +165,18 @@ PShape createThrust() {
   return newThrust;
 }
 
+/**************************************************************
+* Function: drawShip()
+* Parameters: boolean thrustOn
+* Returns: void
+* Desc: Uses pushMatrix() and popMatrix() so that the translate() function's 
+        effects are localised to this funtion.
+        Uses translate() to move Processing's reference to where we want to
+        position the ship
+        Rotates the reference by the amount specified in shipHeading
+        Draws the ship PShape (and optionally the thrust PShape) at the
+        coordinates specified in the shipLocation PVector.
+***************************************************************/
 void drawShip(boolean thrustOn) {
   pushMatrix();
   translate(shipLocation.x, shipLocation.y);
@@ -153,9 +188,21 @@ void drawShip(boolean thrustOn) {
   popMatrix();
 }
 
+/**************************************************************
+* Function: moveShip()
+* Parameters: none
+* Returns: void
+* Desc: Calculates changes to acceleration and heading based on which keys are
+        being pressed. Boolean variables representing the keys being held in
+        are used to make for smoother ship movement than directly using
+        keyPressed() and keyReleased() events.
+        Velocity is calculated by adding acceleration to itself and then limited
+        by the global variable maxSpeed.
+        shipLocation is then updated based on the velocity calculated
+        Finally shipLocation is passed into the function keepOnScreen to ensure
+        it doesn't fly off the screen
+***************************************************************/
 void moveShip() {
-  // move ship based on boolean values that are set by key input
-  // this makes for smoother ship movement
 
   if(sUP){
     shipAcceleration = new PVector(cos(shipHeading), sin(shipHeading)); // accel direction
@@ -179,10 +226,17 @@ void moveShip() {
 
 // -- asteroid related functions -- //
 
+/**************************************************************
+* Function: createAsteroid()
+* Parameters: int size
+* Returns: void
+* Desc: This is an overloaded version of the createAsteroid() function for
+        when the function is called without the starting position specified.
+        This function calculates some random values that are not within a
+        buffer (default 100px) of the ship and are inside the window. It then
+        and calls the createAsteroid() function with those position values.
+***************************************************************/
 void createAsteroid(int size){
-  // when starting position is not specified, run the function with a
-  // random starting position - the starting position should not be within
-  // a square shaped buffer around the ship
   
   float randomX = random(width);
   float randomY = random(height);
@@ -197,11 +251,17 @@ void createAsteroid(int size){
   createAsteroid(size, randomX, randomY);
 }
 
+/**************************************************************
+* Function: createAsteroid()
+* Parameters: int size, float x, float y
+* Returns: void
+* Desc: Creates either a small, medium or large asteroid at position (x, y)
+        and adds its details to the ArrayLists that store them.
+        the initial direction is random and the speed is based on what level
+        of the game you're on. shape is generated randomly by
+        generateAsteroidShape()
+***************************************************************/
 void createAsteroid(int size, float x, float y) {
-  // creates either a small, medium, or large asteroid at position (x, y)
-  // and adds its details to the ArrayLists that store them.
-  // the initial direction is random and the speed is based on what level of
-  // the game you're on. shape is generated randomly by generateAsteroidShape()
 
   asteroidLocation.add(new PVector(x, y));
   asteroidVelocity.add(PVector.random2D().setMag(asteroidSpeed));
@@ -209,12 +269,17 @@ void createAsteroid(int size, float x, float y) {
   asteroidSize.append(size);
 }
 
+/**************************************************************
+* Function: generateAsteroidShape()
+* Parameters: float radius, int numPoints
+* Returns: a new randomly generated asteroid PShape
+* Desc: Generates a random asteroid shape by first dividing a circle with an
+        arbitrary number of equally spaced radials. For each radial, pick a
+        point along it that is a random number equal to +/- half the radius of
+        the circle. Calculate the coordinates of each of those points and then
+        draw lines between them.
+***************************************************************/
 PShape generateAsteroidShape(float radius, int numPoints) {
-  // generates a random asteroid shape by first dividing a circle with an
-  // arbitrary number of equally spaced radials. for each radial, pick a
-  // point along it that is a random number equal to +/- half the radius of
-  // the circle. calculate the coordinates of each of those points and then
-  // draw lines between them.
 
   float angle = TWO_PI / numPoints;
   PShape asteroid = createShape();
@@ -229,10 +294,15 @@ PShape generateAsteroidShape(float radius, int numPoints) {
   return asteroid;
 }
 
+/**************************************************************
+* Function: drawAsteroids()
+* Parameters: none
+* Returns: void
+* Desc: Update the position of each asteroid based on it's velocity
+        Keep the asteroid on the screen with keepOnScreen()
+        Draw each asteroid
+***************************************************************/
 void drawAsteroids() {
-  // update the position of each asteroid based on it's velocity
-  // keep the asteroid on the screen
-  // draw each asteroid
 
    for (int i = 0; i < asteroidLocation.size(); i++) {
      asteroidLocation.get(i).add(asteroidVelocity.get(i));
@@ -245,11 +315,21 @@ void drawAsteroids() {
    }
 }
 
+/**************************************************************
+* Function: breakAsteroid()
+* Parameters: int index
+* Returns: void
+* Desc: Breaks up the asteroid at which is at 'index' in the asteroid arrays.
+        Either creates two smaller asteroids in its place or removes it
+        altogether if it was already the smallest asteroid.
+        Draws debris where the asteroid was.
+        If it was the final asteroid then run the levelUp() function
+***************************************************************/
 void breakAsteroid(int index){
-  // Breaks up the asteroid at which is at 'index' in the asteroid arrays
 
-  //create the debris for the explosion effect
-  //has to be placed before the removal of the asteroid from the arrays otherwise the debris is in the wrong spot
+  // create the debris for the explosion effect
+  // has to be placed before the removal of the asteroid from the arrays
+  // otherwise the debris is in the wrong spot
     for (int i = 1; i <= debrisCount; i++) {
       PVector newDebris = new PVector(random(-90, 90), random(-90, 90));
       newDebris.setMag(debrisSpeed);
@@ -257,7 +337,6 @@ void breakAsteroid(int index){
       debrisVelocitys.add(newDebris);
       debrisAges.append(1);
     }
-    
     
   // if it's the last asteroid
   if (index == 0 && 
@@ -302,12 +381,17 @@ void breakAsteroid(int index){
 // -- game related functions -- //
 //
 
+/**************************************************************
+* Function: levelUp()
+* Parameters: none
+* Returns: void
+* Desc: Increase number of asteroids
+        Increase asteroid speed
+        Increase score
+        Draw new asteroids
+***************************************************************/
 void levelUp() {
-  // increase number of asteroids
-  // increase asteroid speed
-  // increase score
-  // draw new asteroids
-  
+
   numAsteroids += 1;
   asteroidSpeed += 0.5;
   score += 100;
@@ -315,9 +399,17 @@ void levelUp() {
   for (int i=0; i<numAsteroids; i++) {
     createAsteroid(large);
   }
-  
 }
 
+/**************************************************************
+* Function: keepOnScreen()
+* Parameters: a PVector
+* Returns: the PVector that has been corrected to stay on the screen)
+* Desc: Takes a PVector parameter (like the coords of the ship or an asteroid).
+        Tests to see if any of the coordinated have reached a screen boundary
+        and if they have, changes the coordinates to be on the other side of the 
+        window.
+***************************************************************/
 PVector keepOnScreen(PVector coord){
   // Takes a PVector parameter (like the coords of the ship or an asteroid).
   // Tests to see if any of the coordinates have reached a screen boundary
@@ -340,6 +432,12 @@ PVector keepOnScreen(PVector coord){
   return coord;
 }
 
+/**************************************************************
+* Function: collisionDetection()
+* Parameters: none
+* Returns: void
+* Desc: 
+***************************************************************/
 void collisionDetection() {
   
   // check if ship has collided with asteroids
@@ -350,8 +448,7 @@ void collisionDetection() {
           
           alive = false;
           thrustSound.pause();
-          shipExplosion.play();
-          
+          shipExplosion.play();     
     }
   }
 
@@ -380,6 +477,12 @@ void collisionDetection() {
   }
 }
 
+/**************************************************************
+* Function: drawShots()
+* Parameters: none
+* Returns: void
+* Desc: 
+***************************************************************/
 void drawShots() {
    // update the position of the shots
    for (int i=0; i < shotLocations.size(); i++) {
@@ -400,6 +503,12 @@ void drawShots() {
    }
 }
 
+/**************************************************************
+* Function: drawDebris()
+* Parameters: none
+* Returns: void
+* Desc: 
+***************************************************************/
 void drawDebris() {
   for (int i=0; i < debrisLocations.size(); i++) {
     debrisAges.add(i, 1);
@@ -415,6 +524,12 @@ void drawDebris() {
   }
 }
 
+/**************************************************************
+* Function: drawScore()
+* Parameters: none
+* Returns: void
+* Desc: 
+***************************************************************/
 void drawScore() {
   text(str(score), 20, 40);
 }
@@ -467,6 +582,12 @@ void keyPressed() {
     
 }
 
+/**************************************************************
+* Function: keyReleased()
+* Parameters: none
+* Returns: void
+* Desc: 
+***************************************************************/
 void keyReleased() {
   
   // Remove the ships acceleration
@@ -489,6 +610,12 @@ void keyReleased() {
   }
 }
 
+/**************************************************************
+* Function: drawGameOver()
+* Parameters: none
+* Returns: void
+* Desc: 
+***************************************************************/
 void drawGameOver() {
   // ship breaks apart
   // some sort of message on the screen
@@ -503,6 +630,12 @@ void drawGameOver() {
   pop();
 }
 
+/**************************************************************
+* Function: gameRestarted()
+* Parameters: none
+* Returns: void
+* Desc: 
+***************************************************************/
 void gameRestart(){
   alive = true;
   // initialise pvectors 
