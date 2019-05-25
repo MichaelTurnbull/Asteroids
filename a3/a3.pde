@@ -509,7 +509,8 @@ void drawShots() {
 * Function: drawDebris()
 * Parameters: none
 * Returns: void
-* Desc: Draws debris. 
+* Desc: Draws debris based on the details in the debrisLocations, 
+        debrisVelocities, and debrisAges arrays. Debris are drawn as a circle.
 ***************************************************************/
 void drawDebris() {
   for (int i=0; i < debrisLocations.size(); i++) {
@@ -530,12 +531,22 @@ void drawDebris() {
 * Function: drawScore()
 * Parameters: none
 * Returns: void
-* Desc: 
+* Desc: Draws the current score to the upper left corner of the screen.
 ***************************************************************/
 void drawScore() {
   text(str(score), 20, 40);
 }
 
+/**************************************************************
+* Function: keyPressed()
+* Parameters: none
+* Returns: void
+* Desc: Built in Processing event handler for key presses. Assigns boolean
+        variables to true if that key is currently pressed it. Those booleans
+        are then used to manage ship movement.
+        Spacebar triggers firing a shot from the ship's position.
+        The press ENTER to restart is also handled here.
+***************************************************************/
 void keyPressed() {
   if (key == CODED) {
     if (keyCode == UP) {
@@ -546,7 +557,6 @@ void keyPressed() {
     }
     if (keyCode == DOWN) {
       sDOWN=true;
-      breakAsteroid(int(random(0, asteroidLocation.size()-1)));  // for testing
     } 
     if (keyCode == RIGHT) {
       sRIGHT=true;
@@ -554,8 +564,8 @@ void keyPressed() {
     if (keyCode == LEFT) {
       sLEFT=true;
     }
-    
   }
+
   if (key == ' ') {
     //fire a shot
     
@@ -574,31 +584,28 @@ void keyPressed() {
       // play missile sound
       missile.trigger();
     }
-    
-    
+  
   }
   if (key == ENTER && !alive){
     gameRestart();
-  }
-    
-    
+  }  
 }
 
 /**************************************************************
 * Function: keyReleased()
 * Parameters: none
 * Returns: void
-* Desc: 
+* Desc: Built in Processing event handler for key releases. 
 ***************************************************************/
 void keyReleased() {
-  
-  // Remove the ships acceleration
-  shipAcceleration = new PVector(0,0);
   
   if (key == CODED) {
     if (keyCode == UP) {
       sUP=false;
       thrustSound.pause();
+
+      // Remove the ships acceleration
+      shipAcceleration = new PVector(0,0);
     }
     if (keyCode == DOWN) {
       sDOWN=false;
@@ -616,27 +623,24 @@ void keyReleased() {
 * Function: drawGameOver()
 * Parameters: none
 * Returns: void
-* Desc: 
+* Desc: Called when the ship has collided with an asteroid. Displays the
+        game over message.
 ***************************************************************/
 void drawGameOver() {
-  // ship breaks apart
-  // some sort of message on the screen
-  // display final score
-  // ENTER to play again?
-  //   if so, reset everything and start again
-  
+
   push();
   textAlign(CENTER);
   text("GAME OVER", width/2, height/2);
-  text("Press enter to restart", width/2, height/2+50);
+  text("Press ENTER to restart", width/2, height/2+50);
   pop();
 }
 
 /**************************************************************
-* Function: gameRestarted()
+* Function: gameRestart()
 * Parameters: none
 * Returns: void
-* Desc: 
+* Desc: Clears all the arrays that hold game data, resets the score and
+        recreates the asteroids and ship.
 ***************************************************************/
 void gameRestart(){
   alive = true;
@@ -653,11 +657,13 @@ void gameRestart(){
   shotVelocitys.clear();
   
   score = 0;
-  
+  numAsteroids = 5;
+  asteroidSpeed = 1;
+
   for (int i=0; i<numAsteroids; i++) {
     createAsteroid(large);
   }
-  
+   
   ship = createShip();
   thrust = createThrust();
   shipExplosion.rewind();
