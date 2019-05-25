@@ -517,6 +517,8 @@ void gameRestart(){
   shotLocations.clear();
   shotVelocitys.clear();
   
+  score = 0;
+  
   for (int i=0; i<numAsteroids; i++) {
     createAsteroid(large);
   }
