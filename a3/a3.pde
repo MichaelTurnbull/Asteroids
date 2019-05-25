@@ -49,7 +49,8 @@ ArrayList<PVector> shotLocations = new ArrayList<PVector>();
 ArrayList<PVector> shotVelocitys = new ArrayList<PVector>();
 float shotSpeed = 5;
 
-//debris related variables, adjusting debrisCount changes the number of debris particles spawned and adjusting debrisAge changes the lifespan of the debris
+// debris related variables, adjusting debrisCount changes the number of debris
+// particles spawned and adjusting debrisAge changes the lifespan of the debris
 ArrayList<PVector> debrisLocations = new ArrayList<PVector>();
 ArrayList<PVector> debrisVelocitys = new ArrayList<PVector>();
 IntList debrisAges = new IntList();
@@ -411,10 +412,6 @@ void levelUp() {
         window.
 ***************************************************************/
 PVector keepOnScreen(PVector coord){
-  // Takes a PVector parameter (like the coords of the ship or an asteroid).
-  // Tests to see if any of the coordinates have reached a screen boundary
-  // and if they have, changes the coordinates to be on the other side of the 
-  // window. Returns the new coordinates as a PVector.
 
   if (coord.y > height) {
     coord.y = 0;
@@ -436,7 +433,10 @@ PVector keepOnScreen(PVector coord){
 * Function: collisionDetection()
 * Parameters: none
 * Returns: void
-* Desc: 
+* Desc: Detects if the ship has collided with an asteroid and kills the ship
+        if it does.
+        Detects if shots collide with asteroids and calls breakAsteroid() if
+        they do. Also removes the shot from the shot arrays.
 ***************************************************************/
 void collisionDetection() {
   
@@ -481,7 +481,9 @@ void collisionDetection() {
 * Function: drawShots()
 * Parameters: none
 * Returns: void
-* Desc: 
+* Desc: For each shot in the shot arrays, the position is updated based on its
+        velocity then draws the shots. If the shots leave the screen, they are
+        removed from the arrays.
 ***************************************************************/
 void drawShots() {
    // update the position of the shots
@@ -507,7 +509,7 @@ void drawShots() {
 * Function: drawDebris()
 * Parameters: none
 * Returns: void
-* Desc: 
+* Desc: Draws debris. 
 ***************************************************************/
 void drawDebris() {
   for (int i=0; i < debrisLocations.size(); i++) {
