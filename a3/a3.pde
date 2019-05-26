@@ -83,6 +83,7 @@ void setup() {
   // initialise pvectors 
   shipLocation = new PVector(width/2, height/2); // starts at center screen
   shipVelocity = new PVector(0, 0);   // ship starts stationary
+  shipAcceleration = new PVector(0,0); // and with no acceleration
   
   for (int i=0; i<numAsteroids; i++) {
     createAsteroid(large);
@@ -101,7 +102,7 @@ void setup() {
   themeSong.loop();
 }
 
-void draw() {
+void draw(){
   background(0);
   
   if (!alive) {  // if dead
@@ -353,6 +354,7 @@ void breakAsteroid(int index){
   } else {
     // Break the asteroid into two smaller asteroids
     // If it's already the smallest sized asteroid, remove it
+    // TODO: Come up with a breaking up animation
 
     // The position that the two new asteroids will be created
     float newX = asteroidLocation.get(index).x;
@@ -437,13 +439,18 @@ PVector keepOnScreen(PVector coord){
         they do. Also removes the shot from the shot arrays.
 ***************************************************************/
 void collisionDetection() {
+  /**
+  * collisionDetection uses pythagoras's theorem (c^2 = a^2 + b^2) to determine the distance between two points
+  * in this case the centre of the asteroid and the centre of the shot or ship being tested
+  * while accounting for their respective radii to determine if there was a collision
+  */
   
   // check if ship has collided with asteroids
-  for (int i = 0; i < asteroidLocation.size(); i++) {
-    if (pow(shipLocation.x - asteroidLocation.get(i).x, 2) + 
+  for (int i = 0; i < asteroidLocation.size(); i++) { //check each asteroid
+    if (pow(shipLocation.x - asteroidLocation.get(i).x, 2) + //check if the ship collided with the asteroid
         pow(shipLocation.y - asteroidLocation.get(i).y, 2) <= 
         pow(10 + asteroidSize.get(i), 2)) {
-          
+          //since the ship collided with an asteroid, destroy the ship
           alive = false;
           thrustSound.pause();
           shipExplosion.play();     
@@ -451,18 +458,17 @@ void collisionDetection() {
   }
 
   // check if shots have collided with asteroids
-  for (int i = 0; i < asteroidLocation.size(); i++) {
-    for (int j = 0; j < shotLocations.size(); j++) {
+  for (int i = 0; i < asteroidLocation.size(); i++) { //check each asteroid
+    for (int j = 0; j < shotLocations.size(); j++) { //check each shot
 
-      // Lukus wrote this - I don't know understand it but it works really well
-      if (pow(shotLocations.get(j).x - asteroidLocation.get(i).x, 2) + 
+      if (pow(shotLocations.get(j).x - asteroidLocation.get(i).x, 2) +  //check if the shot collided with the asteroid
           pow(shotLocations.get(j).y - asteroidLocation.get(i).y, 2) <= 
           pow(3 + asteroidSize.get(i), 2)) {
-
+        //since they collided, destroy the asteroid
         asteroidExplosion.trigger();
-
+        
         breakAsteroid(i);
-        shotLocations.remove(j);
+        shotLocations.remove(j); //delete the shot
         shotVelocitys.remove(j);
         score += 10;
         
@@ -517,7 +523,7 @@ void drawDebris() {
 
     circle(debrisLocations.get(i).x, debrisLocations.get(i).y, 2);
 
-    if (int(debrisAges.get(i)) > debrisAge) {
+    if (int(debrisAges.get(i)) > debrisAge) { //cleans up debris after they pass a certain age
       debrisLocations.remove(i);
       debrisVelocitys.remove(i);
       debrisAges.remove(i);
@@ -640,7 +646,7 @@ void drawGameOver() {
 * Desc: Clears all the arrays that hold game data, resets the score and
         recreates the asteroids and ship.
 ***************************************************************/
-void gameRestart() {
+void gameRestart(){
   alive = true;
   // initialise pvectors 
   shipLocation = new PVector(width/2, height/2); // starts at center screen
