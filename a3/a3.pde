@@ -129,7 +129,7 @@ void draw(){
 * Desc: Creates a PShape object from a series of vertexes that form the shape 
         of a ship
 ***************************************************************/
-PShape createShip(){
+PShape createShip() {
   PShape newShip;
 
   newShip = createShape();
@@ -237,7 +237,7 @@ void moveShip() {
         buffer (default 100px) of the ship and are inside the window. It then
         and calls the createAsteroid() function with those position values.
 ***************************************************************/
-void createAsteroid(int size){
+void createAsteroid(int size) {
   
   float randomX = random(width);
   float randomY = random(height);
@@ -326,7 +326,7 @@ void drawAsteroids() {
         Draws debris where the asteroid was.
         If it was the final asteroid then run the levelUp() function
 ***************************************************************/
-void breakAsteroid(int index){
+void breakAsteroid(int index) {
 
   // create the debris for the explosion effect
   // has to be placed before the removal of the asteroid from the arrays
@@ -354,7 +354,6 @@ void breakAsteroid(int index){
   } else {
     // Break the asteroid into two smaller asteroids
     // If it's already the smallest sized asteroid, remove it
-    // TODO: Come up with a breaking up animation
 
     // The position that the two new asteroids will be created
     float newX = asteroidLocation.get(index).x;
@@ -411,7 +410,7 @@ void levelUp() {
         and if they have, changes the coordinates to be on the other side of the 
         window.
 ***************************************************************/
-PVector keepOnScreen(PVector coord){
+PVector keepOnScreen(PVector coord) {
 
   if (coord.y > height) {
     coord.y = 0;
@@ -440,14 +439,15 @@ PVector keepOnScreen(PVector coord){
 ***************************************************************/
 void collisionDetection() {
   /**
-  * collisionDetection uses pythagoras's theorem (c^2 = a^2 + b^2) to determine the distance between two points
-  * in this case the centre of the asteroid and the centre of the shot or ship being tested
-  * while accounting for their respective radii to determine if there was a collision
+  * collisionDetection uses pythagoras's theorem (c^2 = a^2 + b^2) to determine 
+  * the distance between two points in this case the centre of the asteroid and
+  * the centre of the shot or ship being tested while accounting for their 
+  * respective radii to determine if there was a collision
   */
   
   // check if ship has collided with asteroids
   for (int i = 0; i < asteroidLocation.size(); i++) { //check each asteroid
-    if (pow(shipLocation.x - asteroidLocation.get(i).x, 2) + //check if the ship collided with the asteroid
+    if (pow(shipLocation.x - asteroidLocation.get(i).x, 2) +
         pow(shipLocation.y - asteroidLocation.get(i).y, 2) <= 
         pow(10 + asteroidSize.get(i), 2)) {
           //since the ship collided with an asteroid, destroy the ship
@@ -461,7 +461,8 @@ void collisionDetection() {
   for (int i = 0; i < asteroidLocation.size(); i++) { //check each asteroid
     for (int j = 0; j < shotLocations.size(); j++) { //check each shot
 
-      if (pow(shotLocations.get(j).x - asteroidLocation.get(i).x, 2) +  //check if the shot collided with the asteroid
+       //check if the shot collided with the asteroid
+      if (pow(shotLocations.get(j).x - asteroidLocation.get(i).x, 2) +
           pow(shotLocations.get(j).y - asteroidLocation.get(i).y, 2) <= 
           pow(3 + asteroidSize.get(i), 2)) {
         //since they collided, destroy the asteroid
@@ -523,7 +524,8 @@ void drawDebris() {
 
     circle(debrisLocations.get(i).x, debrisLocations.get(i).y, 2);
 
-    if (int(debrisAges.get(i)) > debrisAge) { //cleans up debris after they pass a certain age
+    //cleans up debris after they pass a certain age
+    if (int(debrisAges.get(i)) > debrisAge) { 
       debrisLocations.remove(i);
       debrisVelocitys.remove(i);
       debrisAges.remove(i);
@@ -590,7 +592,7 @@ void keyPressed() {
     }
   
   }
-  if (key == ENTER && !alive){
+  if (key == ENTER && !alive) {
     gameRestart();
   }  
 }
@@ -646,7 +648,7 @@ void drawGameOver() {
 * Desc: Clears all the arrays that hold game data, resets the score and
         recreates the asteroids and ship.
 ***************************************************************/
-void gameRestart(){
+void gameRestart() {
   alive = true;
   // initialise pvectors 
   shipLocation = new PVector(width/2, height/2); // starts at center screen
