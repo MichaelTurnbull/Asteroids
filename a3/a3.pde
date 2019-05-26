@@ -83,7 +83,6 @@ void setup() {
   // initialise pvectors 
   shipLocation = new PVector(width/2, height/2); // starts at center screen
   shipVelocity = new PVector(0, 0);   // ship starts stationary
-  shipAcceleration = new PVector(0,0); // and with no acceleration
   
   for (int i=0; i<numAsteroids; i++) {
     createAsteroid(large);
@@ -102,7 +101,7 @@ void setup() {
   themeSong.loop();
 }
 
-void draw(){
+void draw() {
   background(0);
   
   if (!alive) {  // if dead
@@ -354,7 +353,6 @@ void breakAsteroid(int index){
   } else {
     // Break the asteroid into two smaller asteroids
     // If it's already the smallest sized asteroid, remove it
-    // TODO: Come up with a breaking up animation
 
     // The position that the two new asteroids will be created
     float newX = asteroidLocation.get(index).x;
@@ -642,7 +640,7 @@ void drawGameOver() {
 * Desc: Clears all the arrays that hold game data, resets the score and
         recreates the asteroids and ship.
 ***************************************************************/
-void gameRestart(){
+void gameRestart() {
   alive = true;
   // initialise pvectors 
   shipLocation = new PVector(width/2, height/2); // starts at center screen
